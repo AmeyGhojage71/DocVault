@@ -1,0 +1,11 @@
+<div class="container">
+  <h2>Upload Document</h2>
+
+  <input type="file" (change)="onFileSelected($event)" />
+
+  <button mat-raised-button color="primary"
+          (click)="upload()"
+          [disabled]="!selectedFile">
+    Upload
+  </button>
+</div>
