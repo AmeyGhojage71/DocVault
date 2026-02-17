@@ -1,13 +1,40 @@
-using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos;
-[HttpGet]
-public async Task<IActionResult> List()
+using Azure.Storage.Blobs;
+
+[ApiController]
+[Route("api/[controller]")]
+public class MyController : ControllerBase
 {
-    var query = "SELECT * FROM c";
-    var iterator = _cosmosContainer.GetItemQueryIterator<dynamic>(query);
-    var results = new List<dynamic>();
-    while (iterator.HasMoreResults)
-        results.AddRange(await iterator.ReadNextAsync());
-    return Ok(results);
+    private readonly Container _cosmosContainer;
+    private readonly BlobServiceClient _blobClient;
+
+    public MyController(BlobServiceClient blobClient, Container cosmosContainer)
+    {
+        _blobClient = blobClient;
+        _cosmosContainer = cosmosContainer;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> List()
+    {
+        var query = "SELECT * FROM c";
+        var iterator = _cosmosContainer.GetItemQueryIterator<dynamic>(query);
+        var results = new List<dynamic>();
+
+        try
+        {
+            while (iterator.HasMoreResults)
+            {
+                var response = await iterator.ReadNextAsync();
+                results.AddRange(response.Resource);
+            }
+
+            return Ok(results);
+        }
+        catch (CosmosException ex)
+        {
+            return StatusCode((int)ex.StatusCode, ex.Message);
+        }
+    }
 }
