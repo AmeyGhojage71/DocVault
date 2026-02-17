@@ -21,5 +21,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+builder.Services.AddSingleton<BlobService>();
+builder.Services.AddSingleton<CosmosService>();
 
 app.Run();
