@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';   // ✅ ADD THIS
+import { DocumentService, Document } from '../../services/document.service';
 
 @Component({
   selector: 'app-document-list',
@@ -8,7 +9,7 @@ import { CommonModule } from '@angular/common';   // ✅ ADD THIS
   templateUrl: './document-list.html',
   styleUrls: ['./document-list.css']
 })
-export class DocumentList {
+export class DocumentListComponent {
 
   documents = [
     {
