@@ -66,3 +66,5 @@ Authentication: Single Tenant
 Redirect URI: http://localhost:4200  
 
 This app registration enables authentication for Angular frontend and .NET backend.
+
+#KeyVault Setup
