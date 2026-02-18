@@ -6,48 +6,57 @@ using Microsoft.Azure.Cosmos;
 [Route("api/[controller]")]
 public class DocumentsController : ControllerBase
 {
-    private readonly BlobContainerClient _container;
-    private readonly Container _cosmos;
+    private readonly BlobServiceClient _blobClient;
+    private readonly Container _container;
 
-    public DocumentsController(BlobServiceClient blob, CosmosClient cosmos)
+    public DocumentsController(BlobServiceClient blobClient, Container container)
     {
-        _container = blob.GetBlobContainerClient("documents");
-        _container.CreateIfNotExists();
-
-        _cosmos = cosmos.GetContainer("DocVaultDB", "Documents");
+        _blobClient = blobClient;
+        _container = container;
     }
+
+    // ================= UPLOAD =================
 
     [HttpPost]
     public async Task<IActionResult> Upload(IFormFile file)
     {
-        if (file == null) return BadRequest();
+        var blobContainer = _blobClient.GetBlobContainerClient("documents");
+        await blobContainer.CreateIfNotExistsAsync();
 
-        var blob = _container.GetBlobClient(file.FileName);
-        await blob.UploadAsync(file.OpenReadStream(), true);
+        var blob = blobContainer.GetBlobClient(file.FileName);
+
+        using var stream = file.OpenReadStream();
+        await blob.UploadAsync(stream, true);
 
         var doc = new
         {
             id = Guid.NewGuid().ToString(),
             fileName = file.FileName,
-            uploaded = DateTime.UtcNow
+            url = blob.Uri.ToString(),
+            uploadedOn = DateTime.UtcNow
         };
 
-        await _cosmos.CreateItemAsync(doc, new PartitionKey(doc.id));
+        await _container.CreateItemAsync(doc);
 
         return Ok(doc);
     }
 
+    // ================= LIST =================
+
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var query = _cosmos.GetItemQueryIterator<dynamic>("SELECT * FROM c");
-        var result = new List<dynamic>();
+        var query = "SELECT * FROM c";
+        var iterator = _container.GetItemQueryIterator<dynamic>(query);
 
-        while (query.HasMoreResults)
+        var results = new List<dynamic>();
+
+        while (iterator.HasMoreResults)
         {
-            result.AddRange(await query.ReadNextAsync());
+            var response = await iterator.ReadNextAsync();
+            results.AddRange(response.Resource);
         }
 
-        return Ok(result);
+        return Ok(results);
     }
 }

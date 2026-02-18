@@ -3,24 +3,49 @@ using Microsoft.Azure.Cosmos;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Controllers + Swagger
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton(new BlobServiceClient(
-    builder.Configuration["StorageConnection"]));
+// ================= BLOB =================
 
-builder.Services.AddSingleton(new CosmosClient(
-    builder.Configuration["CosmosConnection"]));
+builder.Services.AddSingleton(x =>
+    new BlobServiceClient(builder.Configuration["Storage:ConnectionString"]));
 
-builder.Services.AddEndpointsApiExplorer(); // Needed for Swagger
-builder.Services.AddSwaggerGen();           // Replaces AddOpenApi
+// ================= COSMOS CLIENT =================
+
+builder.Services.AddSingleton(x =>
+    new CosmosClient(builder.Configuration["Cosmos:ConnectionString"]));
+
+// ================= COSMOS CONTAINER =================
+
+builder.Services.AddSingleton<Container>(sp =>
+{
+    var client = sp.GetRequiredService<CosmosClient>();
+    var config  = sp.GetRequiredService<IConfiguration>();
+
+    var dbName        = config["Cosmos:Database"]!;
+    var containerName = config["Cosmos:Container"]!;
+    var partitionKey  = config["Cosmos:PartitionKey"] ?? "/id";
+
+    // Auto-create database and container if they don't exist
+    var dbResponse = client
+        .CreateDatabaseIfNotExistsAsync(dbName)
+        .GetAwaiter().GetResult();
+
+    var containerResponse = dbResponse.Database
+        .CreateContainerIfNotExistsAsync(containerName, partitionKey)
+        .GetAwaiter().GetResult();
+
+    return containerResponse.Container;
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();             // Replaces MapOpenApi
+    app.UseSwagger();
     app.UseSwaggerUI();
 }
 
@@ -28,8 +53,5 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-builder.Services.AddSingleton<BlobService>();
-builder.Services.AddSingleton<CosmosService>();
-
 
 app.Run();
