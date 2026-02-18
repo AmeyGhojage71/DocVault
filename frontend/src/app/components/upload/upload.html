@@ -1,11 +1,81 @@
-<div style="padding:20px">
-  <h2>Upload Document</h2>
+<div class="upload-page">
 
-  <input type="file" (change)="onFileSelected($event)" />
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon">🗄️</span>
+        <span class="logo-text">DocVault</span>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <a routerLink="/" class="nav-link active">Upload</a>
+      <a routerLink="/documents" class="nav-link">My Documents</a>
+    </nav>
+  </div>
 
-  <br><br>
+  <!-- Main -->
+  <div class="main-content">
+    <div class="upload-card">
+      <h1 class="card-title">Upload Document</h1>
+      <p class="card-subtitle">Securely store your files in Azure Blob Storage</p>
 
-  <button (click)="upload()" [disabled]="!selectedFile">
-    Upload
-  </button>
+      <!-- Drop Zone -->
+      <div
+        class="drop-zone"
+        [class.drag-active]="dragOver()"
+        [class.has-file]="selectedFile"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave()"
+        (drop)="onDrop($event)"
+        (click)="fileInput.click()"
+      >
+        <input #fileInput type="file" hidden (change)="onFileSelected($event)" />
+
+        @if (!selectedFile) {
+          <div class="drop-content">
+            <div class="drop-icon">☁️</div>
+            <p class="drop-title">Drag & drop your file here</p>
+            <p class="drop-sub">or <span class="browse-link">browse to choose</span></p>
+            <p class="drop-hint">Supports PDF, DOCX, XLSX, JPG, PNG and more</p>
+          </div>
+        } @else {
+          <div class="file-preview" (click)="$event.stopPropagation()">
+            <div class="file-icon">📄</div>
+            <div class="file-info">
+              <p class="file-name">{{ selectedFile.name }}</p>
+              <p class="file-size">{{ formatSize(selectedFile.size) }}</p>
+            </div>
+            <button class="clear-btn" (click)="clearFile()">✕</button>
+          </div>
+        }
+      </div>
+
+      <!-- Status Messages -->
+      @if (success()) {
+        <div class="alert alert-success">
+          ✅ File uploaded successfully! <a routerLink="/documents" class="view-link">View Documents →</a>
+        </div>
+      }
+
+      @if (error()) {
+        <div class="alert alert-error">
+          ❌ {{ error() }}
+        </div>
+      }
+
+      <!-- Upload Button -->
+      <button
+        class="upload-btn"
+        [disabled]="!selectedFile || uploading()"
+        (click)="upload()"
+      >
+        @if (uploading()) {
+          <span class="spinner"></span> Uploading...
+        } @else {
+          ⬆️ Upload File
+        }
+      </button>
+    </div>
+  </div>
 </div>
