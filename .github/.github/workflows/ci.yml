@@ -1,0 +1,27 @@
+name: CI
+on: pull_request:
+  branches: [ dev, main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [ 'DocVault.Api', 'docvault-ui' ]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with: dotnet-version: 8.0.x
+      - name: Build API
+        if: matrix.project == 'DocVault.Api'
+        run: dotnet build DocVault.Api/DocVault.Api.csproj
+      - name: Setup Node
+        if: matrix.project == 'docvault-ui'
+        uses: actions/setup-node@v3
+        with: node-version: '20'
+      - name: Build Angular
+        if: matrix.project == 'docvault-ui'
+        run: |
+          cd docvault-ui
+          npm install
+          npm run build
