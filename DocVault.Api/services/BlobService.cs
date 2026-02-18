@@ -1,23 +1,14 @@
 using Azure.Storage.Blobs;
 
+namespace DocVault.api.Services;
+
 public class BlobService
 {
     private readonly BlobContainerClient _container;
 
-    public BlobService(IConfiguration config)
+    public BlobService(BlobServiceClient client)
     {
-        var client = new BlobServiceClient(
-            config["Storage:ConnectionString"]);
-
         _container = client.GetBlobContainerClient("documents");
-    }
-
-    public async Task<string> UploadAsync(IFormFile file)
-    {
-        var blob = _container.GetBlobClient(Guid.NewGuid() + file.FileName);
-
-        await blob.UploadAsync(file.OpenReadStream());
-
-        return blob.Uri.ToString();
+        _container.CreateIfNotExists();
     }
 }

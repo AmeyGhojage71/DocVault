@@ -1,41 +1,62 @@
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos;
-using Azure.Storage.Blobs;
 
 [ApiController]
 [Route("api/[controller]")]
-public class MyController : ControllerBase
+public class DocumentsController : ControllerBase
 {
-    private readonly Container _cosmosContainer;
     private readonly BlobServiceClient _blobClient;
+    private readonly Container _container;
 
-    public MyController(BlobServiceClient blobClient, Container cosmosContainer)
+    public DocumentsController(BlobServiceClient blobClient, Container container)
     {
         _blobClient = blobClient;
-        _cosmosContainer = cosmosContainer;
+        _container = container;
     }
+
+    // ================= UPLOAD =================
+
+    [HttpPost]
+    public async Task<IActionResult> Upload(IFormFile file)
+    {
+        var blobContainer = _blobClient.GetBlobContainerClient("documents");
+        await blobContainer.CreateIfNotExistsAsync();
+
+        var blob = blobContainer.GetBlobClient(file.FileName);
+
+        using var stream = file.OpenReadStream();
+        await blob.UploadAsync(stream, true);
+
+        var doc = new
+        {
+            id = Guid.NewGuid().ToString(),
+            fileName = file.FileName,
+            url = blob.Uri.ToString(),
+            uploadedOn = DateTime.UtcNow
+        };
+
+        await _container.CreateItemAsync(doc);
+
+        return Ok(doc);
+    }
+
+    // ================= LIST =================
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
         var query = "SELECT * FROM c";
-        var iterator = _cosmosContainer.GetItemQueryIterator<dynamic>(query);
+        var iterator = _container.GetItemQueryIterator<dynamic>(query);
+
         var results = new List<dynamic>();
 
-        try
+        while (iterator.HasMoreResults)
         {
-            while (iterator.HasMoreResults)
-            
-            {
-                var response = await iterator.ReadNextAsync();
-                results.AddRange(response.Resource);
-            }
+            var response = await iterator.ReadNextAsync();
+            results.AddRange(response.Resource);
+        }
 
-            return Ok(results);
-        }
-        catch (CosmosException ex)
-        {
-            return StatusCode((int)ex.StatusCode, ex.Message);
-        }
+        return Ok(results);
     }
 }
