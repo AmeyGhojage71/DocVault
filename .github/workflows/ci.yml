@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, dev, feature/api-base, feature/ui-base, feature/infra-ci ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  build-api:
+    name: Build .NET API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore DocVault.Api/DocVault.Api.csproj
+
+      - name: Build API
+        run: dotnet build DocVault.Api/DocVault.Api.csproj --no-restore --configuration Release
+
+  build-frontend:
+    name: Build Angular Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Build Angular
+        run: |
+          cd frontend
+          npm run build
