@@ -8,7 +8,9 @@
 
   <ItemGroup>
     <!-- Cosmos DB SDK -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
     <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.57.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.16.0" />
 
     <!-- Newtonsoft.Json for Cosmos dependency -->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
