@@ -11,47 +11,11 @@ import { DocumentService } from '../../services/document.service';
   styleUrls: ['./upload.css']
 })
 export class Upload {
-  selectedFile: File | null = null;
-  uploading = signal(false);
-  success = signal(false);
-  error = signal('');
-  dragOver = signal(false);
 
-  constructor(private docService: DocumentService) { }
+  selectedFile!: File;
 
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files?.length) {
-      this.setFile(input.files[0]);
-    }
-  }
-
-  onDrop(event: DragEvent) {
-    event.preventDefault();
-    this.dragOver.set(false);
-    const file = event.dataTransfer?.files[0];
-    if (file) this.setFile(file);
-  }
-
-  onDragOver(event: DragEvent) {
-    event.preventDefault();
-    this.dragOver.set(true);
-  }
-
-  onDragLeave() {
-    this.dragOver.set(false);
-  }
-
-  setFile(file: File) {
-    this.selectedFile = file;
-    this.success.set(false);
-    this.error.set('');
-  }
-
-  formatSize(bytes: number): string {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  onFileSelected(event: any) {
+    this.selectedFile = event.target.files[0];
   }
 
   upload() {
