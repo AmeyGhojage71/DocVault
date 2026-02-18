@@ -1,7 +1,7 @@
 <div class="docs-page">
 
   <!-- Header -->
-  <div class="page-header">
+  <header class="page-header">
     <div class="logo">
       <span class="logo-icon">🗄️</span>
       <span class="logo-text">DocVault</span>
@@ -10,21 +10,27 @@
       <a routerLink="/" class="nav-link">Upload</a>
       <a routerLink="/documents" class="nav-link active">My Documents</a>
     </nav>
-  </div>
+  </header>
 
   <!-- Main -->
-  <div class="main-content">
+  <main class="main-content">
 
     <!-- Top Bar -->
     <div class="top-bar">
-      <div>
+      <div class="title-group">
         <h1 class="page-title">My Documents</h1>
-        <p class="page-sub">{{ filtered().length }} file{{ filtered().length !== 1 ? 's' : '' }} stored</p>
+        <p class="page-sub">{{ filtered().length }} file{{ filtered().length !== 1 ? 's' : '' }} stored securely</p>
       </div>
       <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input class="search-input" type="text" placeholder="Search files..." [value]="searchQuery()"
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+        </svg>
+        <input class="search-input" type="text" placeholder="Search by file name…" [value]="searchQuery()"
           (input)="onSearch($event)" />
+        @if (searchQuery()) {
+        <button class="search-clear" (click)="clearSearch()" title="Clear search">✕</button>
+        }
       </div>
     </div>
 
@@ -32,47 +38,100 @@
     @if (loading()) {
     <div class="state-box">
       <div class="big-spinner"></div>
-      <p>Loading documents…</p>
+      <p class="state-text">Loading documents…</p>
     </div>
     }
 
     <!-- Error -->
     @if (!loading() && error()) {
-    <div class="state-box error-box">
-      <p>❌ {{ error() }}</p>
-      <button class="retry-btn" (click)="loadDocuments()">Retry</button>
+    <div class="state-box">
+      <div class="state-icon">⚠️</div>
+      <p class="state-text">{{ error() }}</p>
+      <button class="retry-btn" (click)="loadDocuments()">Try Again</button>
     </div>
     }
 
     <!-- Empty -->
     @if (!loading() && !error() && filtered().length === 0) {
     <div class="state-box">
-      <div class="empty-icon">📭</div>
+      <div class="state-icon">📭</div>
       @if (searchQuery()) {
-      <p>No files match "<strong>{{ searchQuery() }}</strong>"</p>
+      <p class="state-text">No files match "<strong>{{ searchQuery() }}</strong>"</p>
+      <button class="retry-btn" (click)="clearSearch()">Clear Search</button>
       } @else {
-      <p>No documents yet. <a routerLink="/" class="link">Upload your first file →</a></p>
+      <p class="state-text">No documents yet. Upload your first file!</p>
+      <a routerLink="/" class="upload-cta">⬆️ Upload File</a>
       }
     </div>
     }
 
-    <!-- Document Grid -->
+    <!-- Document Table -->
     @if (!loading() && !error() && filtered().length > 0) {
-    <div class="doc-grid">
-      @for (doc of filtered(); track doc.id) {
-      <div class="doc-card">
-        <div class="doc-icon">{{ getFileIcon(doc.fileName) }}</div>
-        <div class="doc-info">
-          <p class="doc-name" [title]="doc.fileName">{{ doc.fileName }}</p>
-          <p class="doc-date">{{ formatDate(doc.uploadedOn) }}</p>
-        </div>
-        <div class="doc-actions">
-          <a class="action-btn view-btn" [href]="doc.url" target="_blank" title="View / Download">⬇️</a>
-        </div>
-      </div>
-      }
+    <div class="table-wrap">
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th class="col-name">File Name</th>
+            <th class="col-type">Type</th>
+            <th class="col-size">Size</th>
+            <th class="col-date">Uploaded On</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (doc of filtered(); track doc.id) {
+          <tr class="doc-row" [class.deleting]="deletingId() === doc.id">
+            <td class="col-name">
+              <div class="file-cell">
+                <span class="file-emoji">{{ getFileIcon(doc.fileName) }}</span>
+                <span class="file-name" [title]="doc.fileName">{{ doc.fileName }}</span>
+              </div>
+            </td>
+            <td class="col-type">
+              <span class="type-badge" [ngClass]="getFileTypeClass(doc.fileName)">
+                {{ getFileType(doc.fileName) }}
+              </span>
+            </td>
+            <td class="col-size">
+              <span class="size-text">{{ formatSize(doc.fileSize) }}</span>
+            </td>
+            <td class="col-date">
+              <span class="date-text">{{ formatDateTime(doc.uploadedOn) }}</span>
+            </td>
+            <td class="col-actions">
+              <div class="action-group">
+                <a class="action-btn download-btn" [href]="doc.url" target="_blank" title="Download file">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  <span class="btn-label">Download</span>
+                </a>
+                <button class="action-btn delete-btn" (click)="deleteDocument(doc)" [disabled]="deletingId() === doc.id"
+                  title="Delete file">
+                  @if (deletingId() === doc.id) {
+                  <span class="mini-spinner"></span>
+                  } @else {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                    <path d="M10 11v6M14 11v6" />
+                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                  </svg>
+                  <span class="btn-label">Delete</span>
+                  }
+                </button>
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
     }
 
-  </div>
+  </main>
 </div>
