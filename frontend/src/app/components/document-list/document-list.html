@@ -1,78 +1,18 @@
-<div class="docs-page">
+<div class="document-container">
 
-  <!-- Header -->
-  <div class="page-header">
-    <div class="logo">
-      <span class="logo-icon">🗄️</span>
-      <span class="logo-text">DocVault</span>
+  <h2>Document List</h2>
+
+  <!-- ✅ Correct ngFor -->
+  <div *ngFor="let doc of documents" class="document-card">
+
+    <div class="doc-icon">
+      {{ getFileIcon(doc.fileName) }}
     </div>
-    <nav class="header-nav">
-      <a routerLink="/" class="nav-link">Upload</a>
-      <a routerLink="/documents" class="nav-link active">My Documents</a>
-    </nav>
+
+    <div class="doc-name">
+      {{ doc.fileName }}
+    </div>
+
   </div>
 
-  <!-- Main -->
-  <div class="main-content">
-
-    <!-- Top Bar -->
-    <div class="top-bar">
-      <div>
-        <h1 class="page-title">My Documents</h1>
-        <p class="page-sub">{{ filtered().length }} file{{ filtered().length !== 1 ? 's' : '' }} stored</p>
-      </div>
-      <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input class="search-input" type="text" placeholder="Search files..." [value]="searchQuery()"
-          (input)="onSearch($event)" />
-      </div>
-    </div>
-
-    <!-- Loading -->
-    @if (loading()) {
-    <div class="state-box">
-      <div class="big-spinner"></div>
-      <p>Loading documents…</p>
-    </div>
-    }
-
-    <!-- Error -->
-    @if (!loading() && error()) {
-    <div class="state-box error-box">
-      <p>❌ {{ error() }}</p>
-      <button class="retry-btn" (click)="loadDocuments()">Retry</button>
-    </div>
-    }
-
-    <!-- Empty -->
-    @if (!loading() && !error() && filtered().length === 0) {
-    <div class="state-box">
-      <div class="empty-icon">📭</div>
-      @if (searchQuery()) {
-      <p>No files match "<strong>{{ searchQuery() }}</strong>"</p>
-      } @else {
-      <p>No documents yet. <a routerLink="/" class="link">Upload your first file →</a></p>
-      }
-    </div>
-    }
-
-    <!-- Document Grid -->
-    @if (!loading() && !error() && filtered().length > 0) {
-    <div class="doc-grid">
-      @for (doc of filtered(); track doc.id) {
-      <div class="doc-card">
-        <div class="doc-icon">{{ getFileIcon(doc.fileName) }}</div>
-        <div class="doc-info">
-          <p class="doc-name" [title]="doc.fileName">{{ doc.fileName }}</p>
-          <p class="doc-date">{{ formatDate(doc.uploadedOn) }}</p>
-        </div>
-        <div class="doc-actions">
-          <a class="action-btn view-btn" [href]="doc.url" target="_blank" title="View / Download">⬇️</a>
-        </div>
-      </div>
-      }
-    </div>
-    }
-
-  </div>
 </div>

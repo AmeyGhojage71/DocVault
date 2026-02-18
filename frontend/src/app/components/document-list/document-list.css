@@ -251,3 +251,24 @@
 .view-btn:hover {
   background: var(--primary);
 }
+.document-container {
+  padding: 20px;
+}
+
+.document-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+.doc-icon {
+  font-size: 24px;
+}
+
+.doc-name {
+  font-weight: 500;
+}
