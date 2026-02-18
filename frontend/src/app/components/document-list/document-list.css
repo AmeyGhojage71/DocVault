@@ -1,0 +1,17 @@
+h2 {
+  margin-bottom: 15px;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+th {
+  background-color: #1976d2;
+  color: white;
+}
+
+button {
+  padding: 4px 8px;
+  cursor: pointer;
+}

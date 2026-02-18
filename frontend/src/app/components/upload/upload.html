@@ -1,0 +1,11 @@
+<div style="padding:20px">
+  <h2>Upload Document</h2>
+
+  <input type="file" (change)="onFileSelected($event)" />
+
+  <br><br>
+
+  <button (click)="upload()" [disabled]="!selectedFile">
+    Upload
+  </button>
+</div>
