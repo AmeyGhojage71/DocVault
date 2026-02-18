@@ -1,0 +1,24 @@
+<div style="padding:20px">
+  <h2>My Documents</h2>
+
+  <table border="1" cellpadding="8" cellspacing="0" width="100%">
+    <tr>
+      <th>File Name</th>
+      <th>Size</th>
+      <th>Uploaded Date</th>
+      <th>Action</th>
+    </tr>
+
+    <tr *ngFor="let doc of documents">
+      <td>{{doc.fileName}}</td>
+      <td>{{doc.size}}</td>
+      <td>{{doc.uploadedAt}}</td>
+      <td>
+        <button (click)="deleteDocument(doc.id)">
+          Delete
+        </button>
+      </td>
+    </tr>
+  </table>
+
+</div>
