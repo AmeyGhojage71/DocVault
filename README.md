@@ -12,3 +12,6 @@ Team Member	Role	Contribution
 
 #Amey Ghogage	Azure / DevOps	Provisioned Azure resources (Resource Group, Storage Account, Cosmos DB), created containers and databases, implemented CI/CD pipelines with GitHub Actions for API and Angular deployments, set branch protection rules.
 
+Testing CI pipeline
+
+
