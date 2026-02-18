@@ -1,7 +1,17 @@
+using Azure.Storage.Blobs;
+using Microsoft.Azure.Cosmos;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+builder.Services.AddSingleton(new BlobServiceClient(
+    builder.Configuration["StorageConnection"]));
+
+builder.Services.AddSingleton(new CosmosClient(
+    builder.Configuration["CosmosConnection"]));
+
 builder.Services.AddEndpointsApiExplorer(); // Needed for Swagger
 builder.Services.AddSwaggerGen();           // Replaces AddOpenApi
 
@@ -20,5 +30,6 @@ app.UseAuthorization();
 app.MapControllers();
 builder.Services.AddSingleton<BlobService>();
 builder.Services.AddSingleton<CosmosService>();
+
 
 app.Run();
