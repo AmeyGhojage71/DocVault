@@ -5,6 +5,8 @@ import { Observable } from 'rxjs';
 export interface DocRecord {
     id: string;
     fileName: string;
+    fileSize: number;
+    fileType: string;
     url: string;
     uploadedOn: string;
 }
@@ -23,5 +25,9 @@ export class DocumentService {
 
     list(): Observable<DocRecord[]> {
         return this.http.get<DocRecord[]>(this.api);
+    }
+
+    delete(id: string, fileName: string): Observable<void> {
+        return this.http.delete<void>(`${this.api}/${id}?fileName=${encodeURIComponent(fileName)}`);
     }
 }

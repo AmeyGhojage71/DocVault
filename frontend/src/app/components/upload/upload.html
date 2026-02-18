@@ -1,81 +1,87 @@
 <div class="upload-page">
 
   <!-- Header -->
-  <div class="page-header">
-    <div class="header-left">
-      <div class="logo">
-        <span class="logo-icon">🗄️</span>
-        <span class="logo-text">DocVault</span>
-      </div>
+  <header class="page-header">
+    <div class="logo">
+      <span class="logo-icon">🗄️</span>
+      <span class="logo-text">DocVault</span>
     </div>
     <nav class="header-nav">
       <a routerLink="/" class="nav-link active">Upload</a>
       <a routerLink="/documents" class="nav-link">My Documents</a>
     </nav>
-  </div>
+  </header>
 
   <!-- Main -->
   <div class="main-content">
     <div class="upload-card">
-      <h1 class="card-title">Upload Document</h1>
-      <p class="card-subtitle">Securely store your files in Azure Blob Storage</p>
+
+      <div class="card-header">
+        <h1 class="card-title">Upload Document</h1>
+        <p class="card-subtitle">Securely store your files in Azure Blob Storage</p>
+      </div>
 
       <!-- Drop Zone -->
-      <div
-        class="drop-zone"
-        [class.drag-active]="dragOver()"
-        [class.has-file]="selectedFile"
-        (dragover)="onDragOver($event)"
-        (dragleave)="onDragLeave()"
-        (drop)="onDrop($event)"
-        (click)="fileInput.click()"
-      >
+      <div class="drop-zone" [class.drag-active]="dragOver()" [class.has-file]="selectedFile"
+        (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)" (click)="fileInput.click()">
         <input #fileInput type="file" hidden (change)="onFileSelected($event)" />
 
         @if (!selectedFile) {
-          <div class="drop-content">
-            <div class="drop-icon">☁️</div>
-            <p class="drop-title">Drag & drop your file here</p>
-            <p class="drop-sub">or <span class="browse-link">browse to choose</span></p>
-            <p class="drop-hint">Supports PDF, DOCX, XLSX, JPG, PNG and more</p>
+        <div class="drop-content">
+          <div class="drop-icon-wrap">
+            <svg class="drop-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M7 16a4 4 0 0 1-.88-7.903A5 5 0 1 1 15.9 6L16 6a5 5 0 0 1 1 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
           </div>
+          <p class="drop-title">Drag &amp; drop your file here</p>
+          <p class="drop-sub">or <span class="browse-link">browse to choose</span></p>
+          <p class="drop-hint">PDF, DOCX, XLSX, JPG, PNG and more</p>
+        </div>
         } @else {
-          <div class="file-preview" (click)="$event.stopPropagation()">
-            <div class="file-icon">📄</div>
-            <div class="file-info">
-              <p class="file-name">{{ selectedFile.name }}</p>
-              <p class="file-size">{{ formatSize(selectedFile.size) }}</p>
-            </div>
-            <button class="clear-btn" (click)="clearFile()">✕</button>
+        <div class="file-preview" (click)="$event.stopPropagation()">
+          <div class="file-icon-wrap">{{ getFileEmoji(selectedFile.name) }}</div>
+          <div class="file-info">
+            <p class="file-name">{{ selectedFile.name }}</p>
+            <p class="file-size">{{ formatSize(selectedFile.size) }}</p>
           </div>
+          <button class="clear-btn" (click)="clearFile()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
         }
       </div>
 
       <!-- Status Messages -->
       @if (success()) {
-        <div class="alert alert-success">
-          ✅ File uploaded successfully! <a routerLink="/documents" class="view-link">View Documents →</a>
-        </div>
+      <div class="alert alert-success">
+        <span>✅</span>
+        <span>File uploaded! <a routerLink="/documents" class="view-link">View Documents →</a></span>
+      </div>
       }
-
       @if (error()) {
-        <div class="alert alert-error">
-          ❌ {{ error() }}
-        </div>
+      <div class="alert alert-error">
+        <span>❌</span>
+        <span>{{ error() }}</span>
+      </div>
       }
 
       <!-- Upload Button -->
-      <button
-        class="upload-btn"
-        [disabled]="!selectedFile || uploading()"
-        (click)="upload()"
-      >
+      <button class="upload-btn" [disabled]="!selectedFile || uploading()" (click)="upload()">
         @if (uploading()) {
-          <span class="spinner"></span> Uploading...
+        <span class="spinner"></span> Uploading…
         } @else {
-          ⬆️ Upload File
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+          stroke-linejoin="round" style="width:18px;height:18px">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+        Upload File
         }
       </button>
+
     </div>
   </div>
 </div>

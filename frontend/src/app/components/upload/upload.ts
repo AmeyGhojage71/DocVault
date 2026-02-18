@@ -54,6 +54,18 @@ export class Upload {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
 
+  getFileEmoji(name: string): string {
+    const ext = (name.split('.').pop() ?? '').toLowerCase();
+    if (ext === 'pdf') return '📕';
+    if (['doc', 'docx'].includes(ext)) return '📘';
+    if (['xls', 'xlsx'].includes(ext)) return '📗';
+    if (['ppt', 'pptx'].includes(ext)) return '📙';
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) return '🖼️';
+    if (['zip', 'rar', '7z'].includes(ext)) return '🗜️';
+    if (['html', 'css', 'js', 'ts'].includes(ext)) return '💻';
+    return '📄';
+  }
+
   upload() {
     if (!this.selectedFile) return;
     this.uploading.set(true);
