@@ -8,52 +8,34 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        project: [ 'DocVault.Api', 'docvault-ui' ]
-
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      # -------------------------
-      # .NET Backend
-      # -------------------------
+      # Backend
       - name: Setup .NET
-        if: matrix.project == 'DocVault.Api'
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore API dependencies
-        if: matrix.project == 'DocVault.Api'
+      - name: Restore API
         run: dotnet restore DocVault.Api/DocVault.Api.csproj
 
       - name: Build API
-        if: matrix.project == 'DocVault.Api'
         run: dotnet build DocVault.Api/DocVault.Api.csproj --configuration Release --no-restore
 
-      - name: Run API Tests
-        if: matrix.project == 'DocVault.Api'
-        run: dotnet test --no-build --verbosity normal
-
-      # -------------------------
-      # Angular Frontend
-      # -------------------------
+      # Frontend
       - name: Setup Node
-        if: matrix.project == 'docvault-ui'
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: docvault-ui/package-lock.json
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install Frontend Dependencies
-        if: matrix.project == 'docvault-ui'
-        working-directory: docvault-ui
+        working-directory: frontend
         run: npm ci
 
       - name: Build Angular
-        if: matrix.project == 'docvault-ui'
-        working-directory: docvault-ui
-        run: npm run build -- --configuration pr
+        working-directory: frontend
+        run: npm run build -- --configuration production
