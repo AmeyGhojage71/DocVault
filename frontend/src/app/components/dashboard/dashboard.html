@@ -154,10 +154,10 @@
                             </td>
                             <!-- Type Badge -->
                             <td class="dv-td">
-                                <span class="dv-badge"
-                                    [ngClass]="typeBadgeClass(doc.fileType ?? doc.fileName.split('.').pop() ?? '')">
-                                    {{ (doc.fileType || doc.fileName.split('.').pop() || 'FILE') | uppercase }}
+                                <span class="dv-badge" [ngClass]="typeBadgeClass(getEffectiveFileType(doc))">
+                                    {{ (getEffectiveFileType(doc) || 'FILE') | uppercase }}
                                 </span>
+
                             </td>
                             <!-- Size -->
                             <td class="dv-td dv-td-muted">{{ formatSize(doc.fileSize) }}</td>
