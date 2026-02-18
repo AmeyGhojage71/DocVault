@@ -1,9 +1,0 @@
-<h2>Documents</h2>
-
-<div *ngFor="let d of docs">
-  <p>{{ d.fileName }}</p>
-  <a [href]="d.blobUrl" target="_blank">Download</a>
-  <hr>
-</div>
-
-<a routerLink="/">Back</a>
