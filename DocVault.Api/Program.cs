@@ -1,6 +1,10 @@
 using Azure.Storage.Blobs;
-using Microsoft.Azure.Cosmos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Azure.Cosmos;
+<<<<<<< HEAD
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+=======
+>>>>>>> 5461541 (Added JWT authentication with Entra ID)
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +23,7 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod());
 });
 
+<<<<<<< HEAD
 // ================= AUTH =================
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
@@ -32,6 +37,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidAudience = "8ffa4b4d-3ec5-40f0-a18c-0f976bf80e21"
     };
 });
+=======
+// ================= JWT AUTH (Entra ID) =================
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = $"https://login.microsoftonline.com/{builder.Configuration["AzureAd:TenantId"]}/v2.0";
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["AzureAd:ClientId"]
+        };
+    });
+
+builder.Services.AddAuthorization();
+>>>>>>> 5461541 (Added JWT authentication with Entra ID)
 
 // ================= BLOB =================
 builder.Services.AddSingleton(x =>
@@ -69,7 +90,10 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAngular");
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5461541 (Added JWT authentication with Entra ID)
 app.UseAuthentication();
 app.UseAuthorization();
 
