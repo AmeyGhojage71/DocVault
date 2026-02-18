@@ -2,30 +2,32 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-export interface DocumentModel {
-  id: number;
-  fileName: string;
+export interface DocRecord {
+    id: string;
+    fileName: string;
+    fileSize: number;
+    fileType: string;
+    url: string;
+    uploadedOn: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class DocumentService {
+    private readonly api = 'http://localhost:5032/api/documents';
 
-  private apiUrl = 'https://localhost:5001/api/documents';
+    constructor(private http: HttpClient) { }
 
-  constructor(private http: HttpClient) {}
+    upload(file: File): Observable<DocRecord> {
+        const form = new FormData();
+        form.append('file', file, file.name);
+        return this.http.post<DocRecord>(this.api, form);
+    }
 
-  getDocuments(): Observable<DocumentModel[]> {
-    return this.http.get<DocumentModel[]>(this.apiUrl);
-  }
+    list(): Observable<DocRecord[]> {
+        return this.http.get<DocRecord[]>(this.api);
+    }
 
-  // ✅ ADD THIS METHOD
-  upload(file: File): Observable<any> {
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    return this.http.post(`${this.apiUrl}/upload`, formData);
-  }
+    delete(id: string, fileName: string): Observable<void> {
+        return this.http.delete<void>(`${this.api}/${id}?fileName=${encodeURIComponent(fileName)}`);
+    }
 }

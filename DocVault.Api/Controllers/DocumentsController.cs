@@ -28,15 +28,17 @@ public class DocumentsController : ControllerBase
         using var stream = file.OpenReadStream();
         await blob.UploadAsync(stream, true);
 
-        var doc = new
+        var doc = new DocumentRecord
         {
-            id = Guid.NewGuid().ToString(),
-            fileName = file.FileName,
-            url = blob.Uri.ToString(),
-            uploadedOn = DateTime.UtcNow
+            Id = Guid.NewGuid().ToString(),
+            FileName = file.FileName,
+            FileSize = file.Length,
+            FileType = Path.GetExtension(file.FileName).TrimStart('.').ToUpper(),
+            Url = blob.Uri.ToString(),
+            UploadedOn = DateTime.UtcNow
         };
 
-        await _container.CreateItemAsync(doc);
+        await _container.CreateItemAsync(doc, new PartitionKey(doc.Id));
 
         return Ok(doc);
     }
@@ -46,10 +48,10 @@ public class DocumentsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var query = "SELECT * FROM c";
-        var iterator = _container.GetItemQueryIterator<dynamic>(query);
+        var query = "SELECT * FROM c ORDER BY c._ts DESC";
+        var iterator = _container.GetItemQueryIterator<DocumentRecord>(query);
 
-        var results = new List<dynamic>();
+        var results = new List<DocumentRecord>();
 
         while (iterator.HasMoreResults)
         {
@@ -58,5 +60,24 @@ public class DocumentsController : ControllerBase
         }
 
         return Ok(results);
+    }
+
+    // ================= DELETE =================
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(string id, [FromQuery] string fileName)
+    {
+        // Delete from Cosmos
+        await _container.DeleteItemAsync<DocumentRecord>(id, new PartitionKey(id));
+
+        // Delete from Blob Storage
+        if (!string.IsNullOrEmpty(fileName))
+        {
+            var blobContainer = _blobClient.GetBlobContainerClient("documents");
+            var blob = blobContainer.GetBlobClient(fileName);
+            await blob.DeleteIfExistsAsync();
+        }
+
+        return NoContent();
     }
 }

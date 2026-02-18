@@ -11,7 +11,4 @@ Team Member	Role	Contribution
 #Pallavi	Frontend (Angular)	Scaffolding Angular app, creating Upload & Document List components, handling API calls to backend, implementing routing and UI testing, 5 commits for Angular feature branch.
 
 #Amey Ghogage	Azure / DevOps	Provisioned Azure resources (Resource Group, Storage Account, Cosmos DB), created containers and databases, implemented CI/CD pipelines with GitHub Actions for API and Angular deployments, set branch protection rules.
-
-Testing CI pipeline
-
-
+Fixed Swagger conflict and updated Program.cs
