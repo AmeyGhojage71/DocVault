@@ -1,8 +1,13 @@
 using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos;
+using Microsoft.AspNetCore.Authorization;
 
+
+[Authorize]
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class DocumentsController : ControllerBase
 {
@@ -60,6 +65,32 @@ public class DocumentsController : ControllerBase
         }
 
         return Ok(results);
+    }
+
+    // ================= SEARCH =================
+
+    [HttpGet("search")]
+    public async Task<IActionResult> Search([FromQuery] string q)
+    {
+        if (string.IsNullOrWhiteSpace(q))
+            return BadRequest(new { message = "Search query cannot be empty." });
+
+        var query = "SELECT * FROM c ORDER BY c._ts DESC";
+        var iterator = _container.GetItemQueryIterator<DocumentRecord>(query);
+
+        var results = new List<DocumentRecord>();
+
+        while (iterator.HasMoreResults)
+        {
+            var response = await iterator.ReadNextAsync();
+            results.AddRange(response.Resource);
+        }
+
+        var filtered = results
+            .Where(d => d.FileName.Contains(q, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        return Ok(filtered);
     }
 
     // ================= DELETE =================
