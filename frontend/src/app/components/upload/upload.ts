@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DocumentService } from '../../services/document.service';
+import { MsalService } from '@azure/msal-angular';
 
 @Component({
   selector: 'app-upload',
@@ -17,7 +18,13 @@ export class Upload {
   error = signal('');
   dragOver = signal(false);
 
-  constructor(private docService: DocumentService) { }
+  get userName(): string {
+    const account = this.msalService.instance.getActiveAccount()
+      ?? this.msalService.instance.getAllAccounts()[0];
+    return account?.name ?? account?.username ?? 'User';
+  }
+
+  constructor(private docService: DocumentService, private msalService: MsalService) { }
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -89,5 +96,9 @@ export class Upload {
     this.selectedFile = null;
     this.success.set(false);
     this.error.set('');
+  }
+
+  logout() {
+    this.msalService.logoutRedirect();
   }
 }
