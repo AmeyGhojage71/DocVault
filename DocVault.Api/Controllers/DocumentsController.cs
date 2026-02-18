@@ -25,6 +25,7 @@ public class MyController : ControllerBase
         try
         {
             while (iterator.HasMoreResults)
+            
             {
                 var response = await iterator.ReadNextAsync();
                 results.AddRange(response.Resource);
