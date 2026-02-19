@@ -1,32 +1,45 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';   // ✅ Required for Angular directives
+import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-upload',
   standalone: true,
-  imports: [CommonModule],   // ✅ Important
-  templateUrl: './upload.html',
-  styleUrls: ['./upload.css']
+  imports: [CommonModule],
+  templateUrl: './upload.html'
 })
 export class UploadComponent {
 
-  selectedFile: File | null = null;
-  progress = 0;
+  selectedFile!: File;
+  uploading = false;
+  success = false;
+  error = '';
 
   constructor(private http: HttpClient) {}
 
   onFileSelected(event: any) {
     this.selectedFile = event.target.files[0];
-    console.log("Selected file:", this.selectedFile);
   }
 
   upload() {
-    if (!this.selectedFile) {
-      alert("Please select a file");
-      return;
-    }
+    if (!this.selectedFile) return;
 
-    console.log("Selected file:", this.selectedFile.name);
-    alert("File selected successfully!");
+    const formData = new FormData();
+    formData.append('file', this.selectedFile);
+
+    this.uploading = true;
+    this.success = false;
+    this.error = '';
+
+    this.http.post('/api/documents', formData).subscribe({
+      next: () => {
+        this.uploading = false;
+        this.success = true;
+      },
+      error: (err: any) => {
+        this.uploading = false;
+        this.error = err?.error?.message || 'Upload failed';
+      }
+    });
   }
 }
