@@ -2,6 +2,8 @@ using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos;
+using Microsoft.AspNetCore.Authorization;
+
 
 
 [Authorize]
@@ -10,50 +12,73 @@ using Microsoft.Azure.Cosmos;
 [Route("api/[controller]")]
 public class DocumentsController : ControllerBase
 {
-    private readonly BlobServiceClient _blobClient;
-    private readonly Container _container;
+    private readonly BlobServiceClient _blobServiceClient;
+    private readonly Container _cosmosContainer;
 
-    public DocumentsController(BlobServiceClient blobClient, Container container)
+    private const string BlobContainerName = "documents";
+
+    public DocumentsController(
+        BlobServiceClient blobServiceClient,
+        Container cosmosContainer)
     {
-        _blobClient = blobClient;
-        _container = container;
+        _blobServiceClient = blobServiceClient;
+        _cosmosContainer = cosmosContainer;
     }
 
-    // ================= UPLOAD =================
 
+    // ================= UPLOAD =================
+[Authorize]
+[HttpPost]
     [HttpPost]
     public async Task<IActionResult> Upload(IFormFile file)
     {
-        var blobContainer = _blobClient.GetBlobContainerClient("documents");
+        if (file == null || file.Length == 0)
+            return BadRequest("Invalid file.");
+
+        var blobContainer =
+            _blobServiceClient.GetBlobContainerClient(BlobContainerName);
+
         await blobContainer.CreateIfNotExistsAsync();
 
-        var blob = blobContainer.GetBlobClient(file.FileName);
+        // Unique file name (avoids overwrite)
+        var uniqueFileName =
+            $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+
+        var blobClient =
+            blobContainer.GetBlobClient(uniqueFileName);
 
         using var stream = file.OpenReadStream();
-        await blob.UploadAsync(stream, true);
+        await blobClient.UploadAsync(stream, overwrite: true);
 
-        var doc = new DocumentRecord
+        var document = new DocumentRecord
         {
             Id = Guid.NewGuid().ToString(),
-            FileName = file.FileName,
+            FileName = uniqueFileName,
             FileSize = file.Length,
-            FileType = Path.GetExtension(file.FileName).TrimStart('.').ToUpper(),
-            Url = blob.Uri.ToString(),
+            FileType = Path.GetExtension(file.FileName)
+                            .TrimStart('.')
+                            .ToUpper(),
+            Url = blobClient.Uri.ToString(),
             UploadedOn = DateTime.UtcNow
         };
 
-        await _container.CreateItemAsync(doc, new PartitionKey(doc.Id));
+        await _cosmosContainer.CreateItemAsync(
+            document,
+            new PartitionKey(document.Id)
+        );
 
-        return Ok(doc);
+        return Ok(document);
     }
 
     // ================= LIST =================
-
+[Authorize]
     [HttpGet]
     public async Task<IActionResult> List()
     {
         var query = "SELECT * FROM c ORDER BY c._ts DESC";
-        var iterator = _container.GetItemQueryIterator<DocumentRecord>(query);
+
+        var iterator =
+            _cosmosContainer.GetItemQueryIterator<DocumentRecord>(query);
 
         var results = new List<DocumentRecord>();
 
@@ -66,48 +91,98 @@ public class DocumentsController : ControllerBase
         return Ok(results);
     }
 
-    // ================= SEARCH =================
-
-    [HttpGet("search")]
-    public async Task<IActionResult> Search([FromQuery] string q)
+    // ================= DOWNLOAD =================
+[Authorize]
+    [HttpGet("{id}/download")]
+    public async Task<IActionResult> Download(string id)
     {
-        if (string.IsNullOrWhiteSpace(q))
-            return BadRequest(new { message = "Search query cannot be empty." });
-
-        var query = "SELECT * FROM c ORDER BY c._ts DESC";
-        var iterator = _container.GetItemQueryIterator<DocumentRecord>(query);
-
-        var results = new List<DocumentRecord>();
-
-        while (iterator.HasMoreResults)
+        try
         {
-            var response = await iterator.ReadNextAsync();
-            results.AddRange(response.Resource);
+            var response =
+                await _cosmosContainer.ReadItemAsync<DocumentRecord>(
+                    id,
+                    new PartitionKey(id));
+
+            var document = response.Resource;
+
+            var blobContainer =
+                _blobServiceClient.GetBlobContainerClient(BlobContainerName);
+
+            var blobClient =
+                blobContainer.GetBlobClient(document.FileName);
+
+            if (!await blobClient.ExistsAsync())
+                return NotFound("File not found in Blob Storage.");
+
+            var stream = await blobClient.OpenReadAsync();
+
+            return File(
+                stream,
+                GetContentType(document.FileName),
+                document.FileName
+            );
         }
-
-        var filtered = results
-            .Where(d => d.FileName.Contains(q, StringComparison.OrdinalIgnoreCase))
-            .ToList();
-
-        return Ok(filtered);
+        catch (CosmosException)
+        {
+            return NotFound();
+        }
     }
 
     // ================= DELETE =================
+[Authorize]
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(string id, [FromQuery] string fileName)
+    public async Task<IActionResult> Delete(string id)
     {
-        // Delete from Cosmos
-        await _container.DeleteItemAsync<DocumentRecord>(id, new PartitionKey(id));
-
-        // Delete from Blob Storage
-        if (!string.IsNullOrEmpty(fileName))
+        try
         {
-            var blobContainer = _blobClient.GetBlobContainerClient("documents");
-            var blob = blobContainer.GetBlobClient(fileName);
-            await blob.DeleteIfExistsAsync();
-        }
+            var response =
+                await _cosmosContainer.ReadItemAsync<DocumentRecord>(
+                    id,
+                    new PartitionKey(id));
 
-        return NoContent();
+            var document = response.Resource;
+
+            // Delete from Cosmos
+            await _cosmosContainer.DeleteItemAsync<DocumentRecord>(
+                id,
+                new PartitionKey(id));
+
+            // Delete from Blob
+            var blobContainer =
+                _blobServiceClient.GetBlobContainerClient(BlobContainerName);
+
+            var blobClient =
+                blobContainer.GetBlobClient(document.FileName);
+
+            await blobClient.DeleteIfExistsAsync();
+
+            return NoContent();
+        }
+        catch (CosmosException)
+        {
+            return NotFound();
+        }
+    }
+
+    // ================= HELPER =================
+
+    private string GetContentType(string fileName)
+    {
+        var extension =
+            Path.GetExtension(fileName).ToLowerInvariant();
+
+        return extension switch
+        {
+            ".pdf" => "application/pdf",
+            ".png" => "image/png",
+            ".jpg" => "image/jpeg",
+            ".jpeg" => "image/jpeg",
+            ".docx" =>
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ".doc" => "application/msword",
+            ".txt" => "text/plain",
+            _ => "application/octet-stream"
+        };
     }
 }
