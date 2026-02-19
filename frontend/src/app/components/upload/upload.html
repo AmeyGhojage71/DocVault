@@ -9,6 +9,8 @@
     <nav class="header-nav">
       <a routerLink="/" class="nav-link active">Upload</a>
       <a routerLink="/documents" class="nav-link">My Documents</a>
+      <span class="user-name">👤 {{ userName }}</span>
+      <button class="logout-btn" (click)="logout()">Sign Out</button>
     </nav>
   </header>
 
