@@ -17,16 +17,21 @@
         <div class="dv-upload-area">
             <p class="dv-section-label">Upload New File</p>
 
-            <div class="dv-dropzone" [class.dv-drag]="dragOver()" [class.dv-has-file]="selectedFile"
-                (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)"
+            <div class="dv-dropzone"
+                [class.dv-drag]="dragOver()"
+                [class.dv-has-file]="selectedFile"
+                (dragover)="onDragOver($event)"
+                (dragleave)="onDragLeave()"
+                (drop)="onDrop($event)"
                 (click)="fileInput.click()">
+
                 <input #fileInput type="file" hidden (change)="onFileSelected($event)" />
 
                 @if (!selectedFile) {
                 <div class="dv-dz-idle">
                     <div class="dv-cloud-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round"
-                            stroke-linejoin="round">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
                             <path
                                 d="M7 16a4 4 0 0 1-.88-7.903A5 5 0 1 1 15.9 6L16 6a5 5 0 0 1 1 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
@@ -44,27 +49,27 @@
                     <button class="dv-dz-clear" (click)="clearFile()">✕</button>
                 </div>
                 }
+
             </div>
 
             @if (uploadSuccess()) {
             <div class="dv-alert dv-alert-ok">✅ Uploaded!</div>
             }
+
             @if (uploadError()) {
             <div class="dv-alert dv-alert-err">❌ {{ uploadError() }}</div>
             }
 
-            <button class="dv-upload-btn" [disabled]="!selectedFile || uploading()" (click)="upload()">
+            <button class="dv-upload-btn"
+                [disabled]="!selectedFile || uploading()"
+                (click)="upload()">
+
                 @if (uploading()) {
                 <span class="dv-spin"></span> Uploading…
                 } @else {
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                    stroke-linejoin="round" style="width:15px;height:15px">
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                </svg>
                 Upload File
                 }
+
             </button>
         </div>
 
@@ -77,28 +82,24 @@
         <header class="dv-topbar">
             <div class="dv-topbar-left">
                 <h1 class="dv-page-title">My Documents</h1>
-                <span class="dv-count-badge">{{ filtered().length }} file{{ filtered().length !== 1 ? 's' : '' }}</span>
+                <span class="dv-count-badge">
+                    {{ filtered().length }} file{{ filtered().length !== 1 ? 's' : '' }}
+                </span>
             </div>
+
             <div class="dv-topbar-right">
                 <div class="dv-search-wrap">
-                    <svg class="dv-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8" />
-                        <path d="m21 21-4.35-4.35" />
-                    </svg>
-                    <input class="dv-search-input" type="text" placeholder="Search by name or type…"
-                        [value]="searchQuery()" (input)="onSearch($event)" />
-                    @if (searchQuery()) {
-                    <button class="dv-search-clear" (click)="searchQuery.set('')">✕</button>
-                    }
+                    <input class="dv-search-input"
+                        type="text"
+                        placeholder="Search by name or type…"
+                        [value]="searchQuery()"
+                        (input)="onSearch($event)" />
                 </div>
-                <button class="dv-refresh-btn" (click)="loadDocuments()" title="Refresh">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round" style="width:16px;height:16px">
-                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                        <path d="M21 3v5h-5" />
-                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                        <path d="M8 16H3v5" />
-                    </svg>
+
+                <button class="dv-refresh-btn"
+                    (click)="loadDocuments()"
+                    title="Refresh">
+                    Refresh
                 </button>
             </div>
         </header>
@@ -108,24 +109,27 @@
 
             @if (loading()) {
             <div class="dv-state">
-                <div class="dv-big-spin"></div>
                 <p class="dv-state-text">Loading documents…</p>
             </div>
             }
 
             @if (!loading() && listError()) {
             <div class="dv-state">
-                <p class="dv-state-text" style="color:#f87171">❌ {{ listError() }}</p>
+                <p class="dv-state-text" style="color:#f87171">
+                    ❌ {{ listError() }}
+                </p>
                 <button class="dv-retry-btn" (click)="loadDocuments()">Retry</button>
             </div>
             }
 
             @if (!loading() && !listError() && filtered().length === 0) {
             <div class="dv-state">
-                <div style="font-size:3rem">📭</div>
                 <p class="dv-state-text">
-                    @if (searchQuery()) { No files match "{{ searchQuery() }}" }
-                    @else { No documents yet. Upload your first file! }
+                    @if (searchQuery()) {
+                        No files match "{{ searchQuery() }}"
+                    } @else {
+                        No documents yet. Upload your first file!
+                    }
                 </p>
             </div>
             }
@@ -133,72 +137,70 @@
             @if (!loading() && !listError() && filtered().length > 0) {
             <div class="dv-table-wrap">
                 <table class="dv-table">
+
                     <thead>
-                        <tr class="dv-thead-row">
+                        <tr>
                             <th class="dv-th">File</th>
                             <th class="dv-th">Type</th>
                             <th class="dv-th">Size</th>
                             <th class="dv-th">Uploaded On</th>
-                            <th class="dv-th dv-th-actions">Actions</th>
+                            <th class="dv-th">Actions</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         @for (doc of filtered(); track doc.id) {
-                        <tr class="dv-row" [class.dv-deleting]="deletingId() === doc.id">
-                            <!-- File Name -->
+                        <tr class="dv-row">
+
+                            <!-- File -->
                             <td class="dv-td">
-                                <div class="dv-file-cell">
-                                    <span class="dv-file-emoji">{{ fileIcon(doc.fileName) }}</span>
-                                    <span class="dv-file-name" [title]="doc.fileName">{{ doc.fileName }}</span>
-                                </div>
+                                <span class="dv-file-emoji">
+                                    {{ fileIcon(doc.fileName) }}
+                                </span>
+                                {{ doc.fileName }}
                             </td>
-                            <!-- Type Badge -->
+
+                            <!-- ✅ FIXED TYPE BADGE -->
                             <td class="dv-td">
                                 <span class="dv-badge"
-                                    [ngClass]="typeBadgeClass(doc.fileType ?? doc.fileName.split('.').pop() ?? '')">
+                                    [ngClass]="typeBadgeClass(doc.fileType || doc.fileName.split('.').pop() || '')">
                                     {{ (doc.fileType || doc.fileName.split('.').pop() || 'FILE') | uppercase }}
                                 </span>
                             </td>
+
                             <!-- Size -->
-                            <td class="dv-td dv-td-muted">{{ formatSize(doc.fileSize) }}</td>
+                            <td class="dv-td">
+                                {{ formatSize(doc.fileSize) }}
+                            </td>
+
                             <!-- Date -->
-                            <td class="dv-td dv-td-muted">{{ formatDate(doc.uploadedOn) }}</td>
+                            <td class="dv-td">
+                                {{ formatDate(doc.uploadedOn) }}
+                            </td>
+
                             <!-- Actions -->
                             <td class="dv-td">
-                                <div class="dv-actions">
-                                    <!-- Download -->
-                                    <a class="dv-btn dv-btn-dl" [href]="doc.url" target="_blank" title="Download file">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                            <polyline points="7 10 12 15 17 10" />
-                                            <line x1="12" y1="15" x2="12" y2="3" />
-                                        </svg>
-                                    </a>
-                                    <!-- Delete -->
-                                    <button class="dv-btn dv-btn-del" [disabled]="deletingId() === doc.id"
-                                        (click)="deleteDoc(doc)" title="Delete file">
-                                        @if (deletingId() === doc.id) {
-                                        <span class="dv-mini-spin"></span>
-                                        } @else {
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="3 6 5 6 21 6" />
-                                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                                            <path d="M10 11v6M14 11v6" />
-                                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                                        </svg>
-                                        }
-                                    </button>
-                                </div>
+                                <a class="dv-btn"
+                                    [href]="doc.url"
+                                    target="_blank">
+                                    Download
+                                </a>
+
+                                <button class="dv-btn"
+                                    (click)="deleteDoc(doc)">
+                                    Delete
+                                </button>
                             </td>
+
                         </tr>
                         }
                     </tbody>
+
                 </table>
             </div>
             }
 
         </div>
+
     </main>
 </div>
