@@ -1,10 +1,14 @@
 using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos;
 using Microsoft.AspNetCore.Authorization;
 
 
+
+[Authorize]
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class DocumentsController : ControllerBase
 {
