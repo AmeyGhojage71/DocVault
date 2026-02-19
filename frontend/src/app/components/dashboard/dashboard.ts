@@ -1,7 +1,9 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { DocumentService, DocRecord } from '../../services/document.service';
+import { AuthService } from '../../services/auth.services';
 
 @Component({
     selector: 'app-dashboard',
@@ -37,7 +39,16 @@ export class Dashboard implements OnInit {
         );
     });
 
-    constructor(private docService: DocumentService) { }
+    constructor(
+        private docService: DocumentService,
+        private auth: AuthService,
+        private router: Router
+    ) { }
+
+    logout(): void {
+        this.auth.logout();
+        this.router.navigate(['/login']);
+    }
 
     ngOnInit(): void {
         this.loadDocuments();
