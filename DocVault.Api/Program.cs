@@ -1,75 +1,75 @@
-using Azure.Identity;
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Azure.Cosmos;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Microsoft.Identity.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ================= CONTROLLERS + SWAGGER =================
+// -------------------------
+// Controllers + Swagger
+// -------------------------
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ================= CORS =================
+// -------------------------
+// CORS for Angular
+// -------------------------
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
+    {
         policy.WithOrigins("http://localhost:4200")
               .AllowAnyHeader()
-              .AllowAnyMethod());
+              .AllowAnyMethod();
+    });
 });
 
-// ================= JWT AUTH (simple demo JWT) =================
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
+// -------------------------
+// Azure AD Authentication
+// -------------------------
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
-builder.Services.AddAuthentication(options =>
+// -------------------------
+// Cosmos DB
+// -------------------------
+builder.Services.AddSingleton<CosmosClient>(provider =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(key)
-    };
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    return new CosmosClient(
+        configuration["CosmosDb:Endpoint"],
+        configuration["CosmosDb:Key"]
+    );
 });
 
-builder.Services.AddAuthorization();
-
-// ================= BLOB =================
-builder.Services.AddSingleton(x =>
-    new BlobServiceClient(
-        builder.Configuration["Storage:ConnectionString"]));
-
-// ================= COSMOS =================
-builder.Services.AddSingleton(x =>
-    new CosmosClient(
-        builder.Configuration["Cosmos:ConnectionString"]));
-
-// ================= COSMOS CONTAINER =================
-builder.Services.AddSingleton(sp =>
+builder.Services.AddScoped(sp =>
 {
     var client = sp.GetRequiredService<CosmosClient>();
-    var config = sp.GetRequiredService<IConfiguration>();
+    var configuration = sp.GetRequiredService<IConfiguration>();
     return client.GetContainer(
-        config["Cosmos:Database"],
-        config["Cosmos:Container"]
+        configuration["CosmosDb:DatabaseName"],
+        configuration["CosmosDb:ContainerName"]
+    );
+});
+
+// -------------------------
+// Azure Blob Storage
+// -------------------------
+builder.Services.AddScoped<BlobServiceClient>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    return new BlobServiceClient(
+        configuration["BlobStorage:ConnectionString"]
     );
 });
 
 var app = builder.Build();
 
-// ================= MIDDLEWARE =================
+// -------------------------
+// Development Only
+// -------------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -77,9 +77,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseCors("AllowAngular");
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();
