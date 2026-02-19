@@ -30,10 +30,9 @@ export class Dashboard implements OnInit {
     filtered = computed(() => {
         const q = this.searchQuery().toLowerCase().trim();
         if (!q) return this.documents();
-
         return this.documents().filter(d =>
             d.fileName.toLowerCase().includes(q) ||
-            d.fileType.toLowerCase().includes(q)
+            (d.fileType ?? '').toLowerCase().includes(q)
         );
     });
 
