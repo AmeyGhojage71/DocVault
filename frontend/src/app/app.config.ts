@@ -24,8 +24,12 @@ import {
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 const tenantId = '4290a4f8-06d1-4535-ad77-859d562298ce';
+
+// FRONTEND App Registration Client ID
 const clientId = '8ffa4b4d-3ec5-40f0-a18c-0f976bf80e21';
-const apiClientId = '8ffa4b4d-3ec5-40f0-a18c-0f976bf80e21';
+
+// BACKEND App Registration Client ID
+const apiClientId = 'd9058600-ebf2-44c7-8137-06ffa19802a5';
 
 export function MSALInstanceFactory() {
   return new PublicClientApplication({
@@ -52,21 +56,27 @@ export function MSALGuardConfigFactory() {
 
 export function MSALInterceptorConfigFactory() {
   const protectedResourceMap = new Map<string, Array<string>>();
+
   protectedResourceMap.set('http://localhost:5032/api/', [
-    `api://${apiClientId}/access_as_user`,
-  ]);
+  `api://${apiClientId}/access_as_user`,
+]);
+
+
   return {
     interactionType: InteractionType.Redirect,
     protectedResourceMap,
   };
 }
 
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
-    provideHttpClient(withFetch()),
+    provideHttpClient(withInterceptors([])),
+
+
 
     // MSAL providers
     { provide: MSAL_INSTANCE, useFactory: MSALInstanceFactory },

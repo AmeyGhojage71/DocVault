@@ -162,11 +162,6 @@
 
                             <!-- ✅ FIXED TYPE BADGE -->
                             <td class="dv-td">
-<<<<<<< HEAD
-                                <span class="dv-badge"
-                                    [ngClass]="typeBadgeClass(doc.fileType || doc.fileName.split('.').pop() || '')">
-                                    {{ (doc.fileType || doc.fileName.split('.').pop() || 'FILE') | uppercase }}
-=======
                                 <span class="dv-badge" [ngClass]="typeBadgeClass(getEffectiveFileType(doc))">
                                     {{ (getEffectiveFileType(doc) || 'FILE') | uppercase }}
 >>>>>>> 86eb5db723262b5037083d0c3966665747074811
