@@ -25,7 +25,7 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 const tenantId = '4290a4f8-06d1-4535-ad77-859d562298ce';
 const clientId = '8ffa4b4d-3ec5-40f0-a18c-0f976bf80e21';
-const apiClientId = '8ffa4b4d-3ec5-40f0-a18c-0f976bf80e21';
+const apiClientId = 'd9058600-ebf2-44c7-8137-06ffa19802a5';
 
 export function MSALInstanceFactory() {
   return new PublicClientApplication({
@@ -66,7 +66,8 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
-    provideHttpClient(withFetch()),
+   provideHttpClient(withFetch()),
+    
 
     // MSAL providers
     { provide: MSAL_INSTANCE, useFactory: MSALInstanceFactory },
