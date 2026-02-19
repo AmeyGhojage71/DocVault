@@ -11,7 +11,7 @@ import { MsalService } from '@azure/msal-angular';
   templateUrl: './upload.html',
   styleUrls: ['./upload.css']
 })
-export class Upload {
+export class UploadComponent {
   selectedFile: File | null = null;
   uploading = signal(false);
   success = signal(false);
