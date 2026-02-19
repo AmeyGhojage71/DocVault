@@ -74,35 +74,30 @@ namespace DocVault.Api.Controllers
         }
 
         // ================= DOWNLOAD =================
-        [HttpGet("{id}/download")]
-        public async Task<IActionResult> Download(string id)
-        {
-            try
-            {
-                var response = await _cosmosContainer.ReadItemAsync<DocumentRecord>(
-                    id,
-                    new PartitionKey(id));
+       [HttpGet("{id}/download")]
+public async Task<IActionResult> Download(string id)
+{
+    var query = new QueryDefinition("SELECT * FROM c WHERE c.id = @id")
+        .WithParameter("@id", id);
 
-                var document = response.Resource;
+    var iterator = _cosmosContainer.GetItemQueryIterator<DocumentRecord>(query);
+    var results = await iterator.ReadNextAsync();
 
-                var blobContainer = _blobServiceClient.GetBlobContainerClient(BlobContainerName);
-                var blobClient = blobContainer.GetBlobClient(document.FileName);
+    var document = results.FirstOrDefault();
 
-                if (!await blobClient.ExistsAsync())
-                    return NotFound("File not found in Blob Storage.");
+    if (document == null)
+        return NotFound();
 
-                var stream = await blobClient.OpenReadAsync();
+    var blobContainer = _blobServiceClient.GetBlobContainerClient(BlobContainerName);
+    var blobClient = blobContainer.GetBlobClient(document.FileName);
 
-                return File(
-                    stream,
-                    GetContentType(document.FileName),
-                    document.FileName);
-            }
-            catch (CosmosException)
-            {
-                return NotFound();
-            }
-        }
+    if (!await blobClient.ExistsAsync())
+        return NotFound("File not found in Blob Storage.");
+
+    var stream = await blobClient.OpenReadAsync();
+
+    return File(stream, GetContentType(document.FileName), document.FileName);
+}
 
         // ================= DELETE =================
         [HttpDelete("{id}")]
