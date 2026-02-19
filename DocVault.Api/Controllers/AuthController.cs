@@ -4,55 +4,53 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-[ApiController]
-[Route("api/[controller]")]
-public class AuthController : ControllerBase
+namespace DocVault.Api.Controllers
 {
-    private readonly IConfiguration _config;
-
-    public AuthController(IConfiguration config)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AuthController : ControllerBase
     {
-        _config = config;
-    }
+        private readonly IConfiguration _config;
 
-    [HttpPost("login")]
-    public IActionResult Login(LoginModel model)
-    {
-        // Simple hardcoded login (for demo)
-        if (model.Username != "admin" || model.Password != "1234")
-            return Unauthorized("Invalid credentials");
-
-        var claims = new[]
+        public AuthController(IConfiguration config)
         {
-            new Claim(ClaimTypes.Name, model.Username)
-        };
+            _config = config;
+        }
 
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_config["Jwt:Key"]!)
-        );
-
-        var creds = new SigningCredentials(
-            key,
-            SecurityAlgorithms.HmacSha256
-        );
-
-        var token = new JwtSecurityToken(
-            issuer: _config["Jwt:Issuer"],
-            audience: _config["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.Now.AddHours(1),
-            signingCredentials: creds
-        );
-
-        return Ok(new
+        [HttpPost("login")]
+        public IActionResult Login(LoginModel model)
         {
-            token = new JwtSecurityTokenHandler().WriteToken(token)
-        });
-    }
-}
+            // Simple hardcoded login (for demo)
+            if (model.Username != "admin" || model.Password != "1234")
+                return Unauthorized("Invalid credentials");
 
-public class LoginModel
-{
-    public string Username { get; set; } = "";
-    public string Password { get; set; } = "";
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, model.Username)
+            };
+
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1),
+                signingCredentials: creds);
+
+            return Ok(new
+            {
+                token = new JwtSecurityTokenHandler().WriteToken(token)
+            });
+        }
+
+        public class LoginModel
+        {
+            public string Username { get; set; } = "";
+            public string Password { get; set; } = "";
+        }
+    }
 }
