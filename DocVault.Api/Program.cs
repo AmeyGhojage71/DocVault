@@ -2,8 +2,15 @@ using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Identity.Web;
-
+using Azure.Identity;
+using Azure.Extensions.AspNetCore.Configuration.Secrets;
 var builder = WebApplication.CreateBuilder(args);
+
+var keyVaultName = "docvault-kv123";
+var kvUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
+
+builder.Configuration.AddAzureKeyVault(kvUri, new DefaultAzureCredential());
+
 
 // -------------------------
 // Controllers + Swagger
@@ -64,6 +71,8 @@ builder.Services.AddScoped<BlobServiceClient>(provider =>
         configuration["BlobStorage:ConnectionString"]
     );
 });
+
+
 
 var app = builder.Build();
 
