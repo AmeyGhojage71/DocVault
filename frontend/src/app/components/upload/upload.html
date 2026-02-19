@@ -1,11 +1,13 @@
-<div style="padding:20px">
-  <h2>Upload Document</h2>
+<h2>Upload Document</h2>
 
-  <input type="file" (change)="onFileSelected($event)" />
+<input type="file" (change)="onFileSelected($event)" />
 
-  <br><br>
+<p>DEBUG: {{ selectedFile?.name }}</p>
 
-  <button (click)="upload()" [disabled]="!selectedFile">
-    Upload
-  </button>
+<button (click)="upload()" [disabled]="selectedFile === null">
+  Upload
+</button>
+
+<div *ngIf="progress > 0">
+  Upload Progress: {{ progress }}%
 </div>

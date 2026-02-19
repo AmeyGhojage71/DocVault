@@ -1,45 +1,32 @@
-import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { DocumentService } from '../../services/document.service';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';   // ✅ Required for Angular directives
 
 @Component({
   selector: 'app-upload',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],   // ✅ Important
   templateUrl: './upload.html',
   styleUrls: ['./upload.css']
 })
-export class Upload {
+export class UploadComponent {
 
-  selectedFile!: File;
+  selectedFile: File | null = null;
+  progress = 0;
+
+  constructor(private http: HttpClient) {}
 
   onFileSelected(event: any) {
     this.selectedFile = event.target.files[0];
+    console.log("Selected file:", this.selectedFile);
   }
 
   upload() {
-    if (!this.selectedFile) return;
-    this.uploading.set(true);
-    this.error.set('');
-    this.success.set(false);
+    if (!this.selectedFile) {
+      alert("Please select a file");
+      return;
+    }
 
-    this.docService.upload(this.selectedFile).subscribe({
-      next: () => {
-        this.uploading.set(false);
-        this.success.set(true);
-        this.selectedFile = null;
-      },
-      error: (err) => {
-        this.uploading.set(false);
-        this.error.set(err?.error?.message ?? 'Upload failed. Please try again.');
-      }
-    });
-  }
-
-  clearFile() {
-    this.selectedFile = null;
-    this.success.set(false);
-    this.error.set('');
+    console.log("Selected file:", this.selectedFile.name);
+    alert("File selected successfully!");
   }
 }

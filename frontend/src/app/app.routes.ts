@@ -1,7 +1,8 @@
 import { Routes } from '@angular/router';
-import { Dashboard } from './components/dashboard/dashboard';
+import { Upload } from './components/upload/upload';
+import { DocumentList } from './components/document-list/document-list';
 
 export const routes: Routes = [
-  { path: '', component: Dashboard },
-  { path: '**', redirectTo: '' }
+  { path: '', component: Upload },
+  { path: 'documents', component: DocumentList }
 ];

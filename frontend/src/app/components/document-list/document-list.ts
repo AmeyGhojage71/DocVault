@@ -1,8 +1,5 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { DocumentService, DocRecord } from '../../services/document.service';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';   // ✅ ADD THIS
 
 @Component({
   selector: 'app-document-list',
@@ -11,7 +8,7 @@ import { DocumentService, DocRecord } from '../../services/document.service';
   templateUrl: './document-list.html',
   styleUrls: ['./document-list.css']
 })
-export class DocumentList {
+export class DocumentListComponent {
 
   documents = [
     {
