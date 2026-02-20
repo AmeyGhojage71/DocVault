@@ -1,14 +1,4 @@
 export const environment = {
   production: false,
-  azureAd: {
-    clientId: "8ffa4b4d-3ec5-40f0-a18c-0f976bf80e21",
-    authority: "https://login.microsoftonline.com/4290a4f8-06d1-4535-ad77-859d562298ce",
-    redirectUri: "http://localhost:4200"
-  },
-  
-  api: {
-  scope: "api://d9058600-ebf2-44c7-8137-06ffa19802a5/access_as_user",
-  baseUrl: "https://localhost:5032/api"
-}
-
+  apiUrl: 'http://localhost:5032'
 };
