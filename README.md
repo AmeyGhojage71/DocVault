@@ -18,3 +18,4 @@ Fixed Swagger conflict and updated Program.cs
 
 #Event Grid Created
 #Service Bus Namespace Created on Portal
+#Enabled System Identity Access in Finction App
