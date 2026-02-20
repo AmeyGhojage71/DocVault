@@ -19,3 +19,4 @@ Event Grid Created
 Service Bus Namespace Created on Portal
 Enabled System Identity Access in Function App
 Role Assignment to Storage Blob
+Role Assigned to Cosmos DB
