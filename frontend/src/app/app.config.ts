@@ -5,23 +5,10 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { routes } from './app.routes';
-
-import {
-  MsalModule,
-  MsalGuard,
-  MsalInterceptor,
-  MsalBroadcastService,
-  MsalService,
-  MSAL_INSTANCE,
-  MSAL_GUARD_CONFIG,
-  MSAL_INTERCEPTOR_CONFIG,
-} from '@azure/msal-angular';
-import {
-  PublicClientApplication,
-  InteractionType,
-  BrowserCacheLocation,
-} from '@azure/msal-browser';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './services/auth.interceptor';
+import { MSAL_INSTANCE, MSAL_GUARD_CONFIG, MSAL_INTERCEPTOR_CONFIG, MsalService, MsalGuard, MsalBroadcastService } from '@azure/msal-angular';
+import { PublicClientApplication, BrowserCacheLocation, InteractionType } from '@azure/msal-browser';
 
 const tenantId = '4290a4f8-06d1-4535-ad77-859d562298ce';
 
@@ -58,9 +45,8 @@ export function MSALInterceptorConfigFactory() {
   const protectedResourceMap = new Map<string, Array<string>>();
 
   protectedResourceMap.set('http://localhost:5032/api/', [
-  `api://${apiClientId}/access_as_user`,
-]);
-
+    `api://${apiClientId}/access_as_user`,
+  ]);
 
   return {
     interactionType: InteractionType.Redirect,
@@ -68,16 +54,17 @@ export function MSALInterceptorConfigFactory() {
   };
 }
 
-
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
-provideHttpClient(withInterceptorsFromDi()),
-
-
-
+    provideHttpClient(withInterceptorsFromDi()),
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    },
     // MSAL providers
     { provide: MSAL_INSTANCE, useFactory: MSALInstanceFactory },
     { provide: MSAL_GUARD_CONFIG, useFactory: MSALGuardConfigFactory },
@@ -85,10 +72,5 @@ provideHttpClient(withInterceptorsFromDi()),
     MsalService,
     MsalGuard,
     MsalBroadcastService,
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: MsalInterceptor,
-      multi: true,
-    },
-  ],
+  ]
 };

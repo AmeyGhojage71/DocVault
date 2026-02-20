@@ -45,6 +45,26 @@ export class DocumentList implements OnInit {
     });
   }
 
+  download(doc: DocRecord) {
+    this.docService.downloadDocument(doc.id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = doc.fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => {
+        alert('Download failed. Please try again.');
+      }
+    });
+  }
+
+
+
   deleteDocument(doc: DocRecord) {
     if (this.deletingId()) return;
     if (!confirm(`Delete "${doc.fileName}"? This cannot be undone.`)) return;

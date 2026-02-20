@@ -100,7 +100,7 @@
             </td>
             <td class="col-actions">
               <div class="action-group">
-                <a class="action-btn download-btn" [href]="doc.url" target="_blank" title="Download file">
+                <button class="action-btn download-btn" (click)="download(doc)" title="Download file">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                     stroke-linejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -108,7 +108,7 @@
                     <line x1="12" y1="15" x2="12" y2="3" />
                   </svg>
                   <span class="btn-label">Download</span>
-                </a>
+                </button>
                 <button class="action-btn delete-btn" (click)="deleteDocument(doc)" [disabled]="deletingId() === doc.id"
                   title="Delete file">
                   @if (deletingId() === doc.id) {

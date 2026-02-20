@@ -1,7 +1,9 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { DocumentService, DocRecord } from '../../services/document.service';
+import { AuthService } from '../../services/auth.services';
 
 @Component({
     selector: 'app-dashboard',
@@ -28,15 +30,25 @@ export class Dashboard implements OnInit {
 
     // ───────── Filtered List (Computed) ─────────
     filtered = computed(() => {
-        const q = this.searchQuery().toLowerCase().trim();
-        if (!q) return this.documents();
-        return this.documents().filter(d =>
-            d.fileName.toLowerCase().includes(q) ||
-            (d.fileType ?? '').toLowerCase().includes(q)
-        );
-    });
+    const q = this.searchQuery().toLowerCase().trim();
+    if (!q) return this.documents();
+    return this.documents().filter(d =>
+        d.fileName.toLowerCase().includes(q) ||
+        d.fileType.toLowerCase().includes(q)
+    );
+});
 
-    constructor(private docService: DocumentService) { }
+
+    constructor(
+        private docService: DocumentService,
+        private auth: AuthService,
+        private router: Router
+    ) { }
+
+    logout(): void {
+        this.auth.logout();
+        this.router.navigate(['/login']);
+    }
 
     ngOnInit(): void {
         this.loadDocuments();
