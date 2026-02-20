@@ -26,6 +26,12 @@ export class DocumentService {
     list(): Observable<DocRecord[]> {
         return this.http.get<DocRecord[]>(this.api);
     }
+    downloadDocument(id: string) {
+  return this.http.get(
+    `http://localhost:5032/api/documents/${id}/download`,
+    { responseType: 'blob' }
+  );
+}
 
     delete(id: string, fileName: string): Observable<void> {
         return this.http.delete<void>(`${this.api}/${id}?fileName=${encodeURIComponent(fileName)}`);

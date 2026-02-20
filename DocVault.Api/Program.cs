@@ -1,80 +1,84 @@
-using Azure.Identity;
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Azure.Cosmos;
-using Microsoft.IdentityModel.Tokens;
-
+using Microsoft.Identity.Web;
+using Azure.Identity;
+using Azure.Extensions.AspNetCore.Configuration.Secrets;
 var builder = WebApplication.CreateBuilder(args);
 
-// ================= KEY VAULT =================
-// Reads secrets from Azure Key Vault using Managed Identity (in production)
-// or DefaultAzureCredential (local dev uses az login / env vars)
-var keyVaultUri = builder.Configuration["KeyVault:Uri"];
-if (!string.IsNullOrEmpty(keyVaultUri))
-{
-    builder.Configuration.AddAzureKeyVault(
-        new Uri(keyVaultUri),
-        new DefaultAzureCredential()
-    );
-}
+var keyVaultName = "docvault-kv123";
+var kvUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
 
-// ================= CONTROLLERS + SWAGGER =================
+builder.Configuration.AddAzureKeyVault(kvUri, new DefaultAzureCredential());
+
+
+// -------------------------
+// Controllers + Swagger
+// -------------------------
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ================= CORS =================
+// -------------------------
+// CORS for Angular
+// -------------------------
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
+    {
         policy.WithOrigins("http://localhost:4200")
               .AllowAnyHeader()
-              .AllowAnyMethod());
+              .AllowAnyMethod();
+    });
 });
 
-// ================= JWT AUTH (Entra ID) =================
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority =
-            $"https://login.microsoftonline.com/{builder.Configuration["AzureAd:TenantId"]}/v2.0";
+// -------------------------
+// Azure AD Authentication
+// -------------------------
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateAudience = true,
-            ValidAudience = builder.Configuration["AzureAd:ClientId"]
-        };
-    });
-
-builder.Services.AddAuthorization();
-
-// ================= BLOB =================
-builder.Services.AddSingleton(x =>
-    new BlobServiceClient(
-        builder.Configuration["Storage:ConnectionString"]
-    ));
-
-// ================= COSMOS =================
-builder.Services.AddSingleton(x =>
-    new CosmosClient(
-        builder.Configuration["Cosmos:ConnectionString"]
-    ));
-
-// ================= COSMOS CONTAINER =================
-builder.Services.AddSingleton<Container>(sp =>
+// -------------------------
+// Cosmos DB
+// -------------------------
+builder.Services.AddSingleton<CosmosClient>(provider =>
 {
-    var client = sp.GetRequiredService<CosmosClient>();
-    var config = sp.GetRequiredService<IConfiguration>();
-
-    return client.GetContainer(
-        config["Cosmos:Database"],
-        config["Cosmos:Container"]
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    return new CosmosClient(
+        configuration["CosmosDb:Endpoint"],
+        configuration["CosmosDb:Key"]
     );
 });
 
+builder.Services.AddScoped(sp =>
+{
+    var client = sp.GetRequiredService<CosmosClient>();
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    return client.GetContainer(
+        configuration["CosmosDb:DatabaseName"],
+        configuration["CosmosDb:ContainerName"]
+    );
+});
+
+// -------------------------
+// Azure Blob Storage
+// -------------------------
+builder.Services.AddScoped<BlobServiceClient>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    return new BlobServiceClient(
+        configuration["BlobStorage:ConnectionString"]
+    );
+});
+
+
+
 var app = builder.Build();
 
-// ================= MIDDLEWARE =================
+// -------------------------
+// Development Only
+// -------------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

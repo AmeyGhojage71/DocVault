@@ -1,50 +1,49 @@
-# DocVault - Daywise Implementation Plan
+# DocVault - AZ-204 Capstone Project TODO
 
-## DAY 1 - Foundation & Storage
+## Current Status
+- ✅ Basic project structure
+- ✅ .NET 8 Web API with controllers
+- ✅ Angular frontend with dashboard
+- ⚠️ Partial implementation - needs completion
 
-### Security Fixes
-- [ ] 1. Fix .gitignore to exclude appsettings.json
-- [ ] 2. Update appsettings.json to use environment variables
+## Day 1 - Foundation & Storage
+- [x] Project structure created
+- [x] Upload API endpoint
+- [x] List API endpoint  
+- [x] Download endpoint
+- [x] Delete endpoint
+- [x] Angular upload component
+- [x] Angular document list component
+- [ ] Fix hardcoded secrets - move to Key Vault
+- [ ] Configure Blob lifecycle policy
 
-### GitHub & CI/CD
-- [ ] 3. Create GitHub Actions CI workflow (ci.yml)
-- [ ] 4. Create GitHub Actions deploy workflow (deploy.yml)
+## Day 2 - Security, Identity & Serverless
+- [ ] Update AuthController for Entra ID (or keep simple JWT for demo)
+- [ ] Create Azure Function (Blob trigger) for document processing
+- [ ] Enable Managed Identity on App Service
+- [ ] Add search endpoint
 
-### Backend Enhancements
-- [ ] 5. Update Document model with full schema (id, userId, fileName, blobUrl, contentType, sizeBytes, uploadedAt, tags, excerpt, thumbnailUrl, status)
-- [ ] 6. Enhance Upload API: Add proper metadata, SAS token generation
-- [ ] 7. Enhance List API: Add user filtering, SAS download URLs
-- [ ] 8. Add Get by ID endpoint
-- [ ] 9. Add Delete endpoint
-- [ ] 10. Add Health check endpoint
+## Day 3 - Events, Messaging & Observability
+- [ ] Set up Event Grid Topic
+- [ ] Set up Service Bus Queue
+- [ ] Create Service Bus trigger function
+- [ ] Configure Application Insights
+- [ ] Set up API Management
 
-### Frontend Enhancements
-- [ ] 11. Add upload method to DocumentService
-- [ ] 12. Update DocumentService interface with full schema
-- [ ] 13. Connect DocumentList component to API
-- [ ] 14. Add download functionality
+## Day 4 - Containers & Polish
+- [ ] Dockerize .NET API
+- [ ] Deploy to Azure Container Apps
+- [ ] Create architecture diagram
+- [ ] Final testing and demo prep
 
-### Azure Configuration
-- [ ] 15. Set up Blob lifecycle policy (Cool after 30 days, Archive after 180 days)
+## Security Issues to Fix
+1. Move Storage connection string to Key Vault
+2. Move Cosmos DB key to Key Vault
+3. Enable Key Vault in configuration
+4. Use Managed Identity for Azure resources
 
-## DAY 2 - Security, Identity & Serverless
-
-### Key Vault & Managed Identity
-- [ ] 16. Create Key Vault setup script
-- [ ] 17. Move secrets to Key Vault
-- [ ] 18. Enable Managed Identity on App Service
-
-### Authentication
-- [ ] 19. Add JWT bearer authentication middleware in .NET API
-- [ ] 20. Update Angular auth guard
-- [ ] 21. Protect API endpoints
-
-### Azure Functions
-- [ ] 22. Create Azure Function project
-- [ ] 23. Implement Blob trigger function for thumbnail generation
-- [ ] 24. Implement text extraction
-- [ ] 25. Enable Managed Identity on Function App
-
-### Search
-- [ ] 26. Add search endpoint in API
-- [ ] 27. Add search UI in frontend
+## Files to Create/Update
+- Azure Functions (Blob trigger, Service Bus trigger)
+- GitHub Actions workflows (ci.yml, deploy.yml)
+- Application Insights setup
+- API Management configuration
