@@ -2,17 +2,15 @@ using Azure.Identity;
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Azure.Cosmos;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Microsoft.Identity.Web;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ================= KEY VAULT =================
-// Reads secrets from Azure Key Vault using Managed Identity (in production)
-// or DefaultAzureCredential (local dev uses az login / env vars)
 var keyVaultUri = builder.Configuration["KeyVault:Uri"];
+
 if (!string.IsNullOrEmpty(keyVaultUri))
 {
     builder.Configuration.AddAzureKeyVault(
@@ -35,29 +33,19 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod());
 });
 
-// ================= JWT AUTH (Entra ID) =================
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority =
-            $"https://login.microsoftonline.com/{builder.Configuration["AzureAd:TenantId"]}/v2.0";
-
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateAudience = true,
-            ValidAudience = builder.Configuration["AzureAd:ClientId"]
-        };
-    });
+// ================= JWT AUTH (Azure Entra ID) =================
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
 builder.Services.AddAuthorization();
-
-// ================= BLOB =================
+// ================= BLOB STORAGE =================
 builder.Services.AddSingleton(x =>
     new BlobServiceClient(
         builder.Configuration["Storage:ConnectionString"]
     ));
 
-// ================= COSMOS =================
+// ================= COSMOS DB =================
 builder.Services.AddSingleton(x =>
     new CosmosClient(
         builder.Configuration["Cosmos:ConnectionString"]
@@ -75,28 +63,6 @@ builder.Services.AddSingleton<Container>(sp =>
     );
 });
 
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(key)
-    };
-});
-
 var app = builder.Build();
 
 // ================= MIDDLEWARE =================
@@ -109,6 +75,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAngular");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
