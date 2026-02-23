@@ -1,0 +1,38 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedOrigins": [ "http://localhost:4200" ],
+  "KeyVaultUri": "",
+  "EntraId": {
+    "Instance": "https://login.microsoftonline.com/",
+    "TenantId": "YOUR_TENANT_ID",
+    "ClientId": "YOUR_API_CLIENT_ID",
+    "Audience": "api://YOUR_API_CLIENT_ID"
+  },
+  "CosmosDb": {
+    "Endpoint": "https://YOUR_COSMOS.documents.azure.com:443/",
+    "Key": "YOUR_PRIMARY_KEY",
+    "DatabaseName": "docvault",
+    "ContainerName": "documents"
+  },
+  "BlobStorage": {
+    "ConnectionString": "DefaultEndpointsProtocol=https;AccountName=YOUR_ACCOUNT;AccountKey=YOUR_KEY;EndpointSuffix=core.windows.net",
+    "ContainerName": "uploads",
+    "ThumbnailContainer": "thumbnails"
+  },
+  "EventGrid": {
+    "TopicEndpoint": "https://YOUR_TOPIC.region.eventgrid.azure.net/api/events",
+    "TopicKey": "YOUR_TOPIC_KEY"
+  },
+  "ServiceBus": {
+    "ConnectionString": "Endpoint=sb://YOUR_NAMESPACE.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=YOUR_KEY",
+    "QueueName": "document-processing"
+  },
+  "ApplicationInsights": {
+    "ConnectionString": "InstrumentationKey=YOUR_KEY;IngestionEndpoint=https://eastus-0.in.applicationinsights.azure.com/"
+  }
+}

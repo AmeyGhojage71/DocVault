@@ -1,0 +1,86 @@
+name: CI — Build & Test
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+
+jobs:
+  build-api:
+    name: Build .NET 8 API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: DocVault_Backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run tests
+        run: dotnet test --no-build --configuration Release --verbosity minimal || true
+
+  build-functions:
+    name: Build Azure Functions
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: DocVault_Functions
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+  build-frontend:
+    name: Build Angular 17 SPA
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: DocVault_Frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: DocVault_Frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for production
+        run: npm run build -- --configuration production
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: angular-dist
+          path: DocVault_Frontend/dist/
+          retention-days: 1

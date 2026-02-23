@@ -1,0 +1,26 @@
+# ── .NET ─────────────────────────────────────────────────────────
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.log
+
+# Secrets — keep out of source control
+appsettings.Development.json
+# Leave appsettings.json in but with empty connection strings (see note below)
+
+# ── Angular ───────────────────────────────────────────────────────
+node_modules/
+dist/
+.angular/
+*.js.map
+
+# ── Azure Functions ───────────────────────────────────────────────
+local.settings.json
+
+# ── OS / IDE ──────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/settings.json
