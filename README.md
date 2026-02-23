@@ -161,3 +161,6 @@ interface Document {
 - [x] GitHub Actions CD pipeline
 - [x] Feature branch → dev → main workflow
 - [x] Dockerfile + Container Apps (stretch)
+
+Microsoft Azure Credentials
+Email :- ameyghojage71@gmail.com
